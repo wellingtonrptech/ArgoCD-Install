@@ -30,13 +30,6 @@ jobs:
       - name: Instalar o Helm
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-          
-      - name: Teste Login
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: 'latest'
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
       
       - name: Configurar o gcloud SDK
         run: |
@@ -59,13 +52,15 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           
-      - name: Teste Login
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: 'latest'
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Install ArgoCD
+        run: |
+          helm install argocd argo/argo-cd --namespace argocd
       
       - name: Verificar login no GCP
         run: |
           gcloud auth list
+          
+      -  name: Verifica Instalação do ArgoCD
+         run: |
+           kubectl get pods -n argocd
+
