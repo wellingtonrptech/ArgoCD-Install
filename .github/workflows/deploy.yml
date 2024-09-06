@@ -47,10 +47,6 @@ jobs:
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo update
       
-      - name: Instalar o Argo CD
+      - name: Verificar login no GCP
         run: |
-          helm install argo-cd argo/argo-cd --namespace argocd --create-namespace
-      
-      - name: Verificar a instalação do Argo CD
-        run: |
-          kubectl get pods -n argocd
+          gcloud auth list
