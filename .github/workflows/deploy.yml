@@ -36,8 +36,11 @@ jobs:
           sudo apt-get update && sudo apt-get install -y curl
           curl https://sdk.cloud.google.com | bash
           exec -l $SHELL
+          # Adicionando a configuração não interativa
           gcloud components install kubectl
           gcloud auth activate-service-account --key-file="${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
+          gcloud config set project ${GCP_PROJECT_ID}
+          gcloud config set compute/zone ${GKE_CLUSTER_ZONE}
           gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_CLUSTER_ZONE} --project ${GCP_PROJECT_ID}
       
       - name: Adicionar o repositório Helm do Argo CD
