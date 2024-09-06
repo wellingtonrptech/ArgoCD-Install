@@ -12,6 +12,12 @@ jobs:
     steps:
       - name: Verificar o repositório
         uses: actions/checkout@v2
+
+      - name: Instalar GC CLou
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          curl https://sdk.cloud.google.com | bash
+          exec -l $SHELL
       
       - name: Instalar o kubectl
         run: |
@@ -33,9 +39,6 @@ jobs:
       
       - name: Configurar o gcloud SDK
         run: |
-          sudo apt-get update && sudo apt-get install -y curl
-          curl https://sdk.cloud.google.com | bash
-          exec -l $SHELL
           gcloud components install kubectl
           gcloud components install gke-gcloud-auth-plugin
           gcloud auth activate-service-account --key-file="${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
