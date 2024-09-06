@@ -25,17 +25,20 @@ jobs:
       - name: Configurar o kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
-          export KUBECONFIG=~/.kube/config
+          chmod 600 ~/.kube/config  # Corrigir permissões
       
       - name: Instalar o Helm
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       
-      - name: Instalar o gke-gcloud-auth-plugin
+      - name: Configurar o gcloud SDK
         run: |
-          curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.24.0/bin/linux/amd64/gke-gcloud-auth-plugin"
-          chmod +x ./gke-gcloud-auth-plugin
-          sudo mv ./gke-gcloud-auth-plugin /usr/local/bin/gke-gcloud-auth-plugin
+          sudo apt-get update && sudo apt-get install -y curl
+          curl https://sdk.cloud.google.com | bash
+          exec -l $SHELL
+          gcloud components install kubectl
+          gcloud auth activate-service-account --key-file="${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
+          gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_CLUSTER_ZONE} --project ${GCP_PROJECT_ID}
       
       - name: Adicionar o repositório Helm do Argo CD
         run: |
