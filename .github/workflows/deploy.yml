@@ -13,11 +13,13 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v2
       
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          sudo mv ./kubectl /usr/local/bin/kubectl
+      - name: Set up Kubernetes
+        uses: azure/setup-kubectl@v1
+        with:
+          version: '1.24.0'  # Ou outra versão estável
+      
+      - name: Create .kube directory
+        run: mkdir -p ~/.kube
       
       - name: Set up kubeconfig
         run: |
