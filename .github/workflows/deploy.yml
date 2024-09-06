@@ -10,39 +10,42 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Verificando repositório
+      - name: Verificar o repositório
         uses: actions/checkout@v2
       
-      - name: Instalando kubectl
+      - name: Instalar o kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
       
-      - name: Criando a pasta .kube
+      - name: Criar o diretório .kube
         run: mkdir -p ~/.kube
       
-      - name: Configurando kubeconfig
+      - name: Configurar o kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
           export KUBECONFIG=~/.kube/config
       
-      - name: Verifica a versão do kubectl
-        run: kubectl version --client
-      
-      - name: Intalando Helm
+      - name: Instalar o Helm
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       
-      - name: Argo CD Helm repository
+      - name: Instalar o gke-gcloud-auth-plugin
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.24.0/bin/linux/amd64/gke-gcloud-auth-plugin"
+          chmod +x ./gke-gcloud-auth-plugin
+          sudo mv ./gke-gcloud-auth-plugin /usr/local/bin/gke-gcloud-auth-plugin
+      
+      - name: Adicionar o repositório Helm do Argo CD
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo update
       
-      - name: Intalando Argo CD
+      - name: Instalar o Argo CD
         run: |
           helm install argo-cd argo/argo-cd --namespace argocd --create-namespace
       
-      - name: Verifica instalação do ArgoCD
+      - name: Verificar a instalação do Argo CD
         run: |
           kubectl get pods -n argocd
