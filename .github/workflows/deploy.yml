@@ -54,6 +54,7 @@ jobs:
           
       -  name: Verifica Instalação do ArgoCD
          run: |
+           kubectl get nodes
            kubectl get pods -n argocd
           
       - name: Install ArgoCD
