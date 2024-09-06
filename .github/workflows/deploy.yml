@@ -6,26 +6,43 @@ on:
       - main
 
 jobs:
-  setup-kubectl:
+  setup-kubectl-and-argo:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Check out the repository
+      - name: Verificando repositório
         uses: actions/checkout@v2
       
-      - name: Install kubectl
+      - name: Instalando kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
       
-      - name: Create .kube directory
+      - name: Criando a pasta .kube
         run: mkdir -p ~/.kube
       
-      - name: Set up kubeconfig
+      - name: Configurando kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
           export KUBECONFIG=~/.kube/config
       
-      - name: Verify kubectl version
+      - name: Verifica a versão do kubectl
         run: kubectl version --client
+      
+      - name: Intalando Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      
+      - name: Argo CD Helm repository
+        run: |
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo update
+      
+      - name: Intalando Argo CD
+        run: |
+          helm install argo-cd argo/argo-cd --namespace argocd --create-namespace
+      
+      - name: Verifica instalação do ArgoCD
+        run: |
+          kubectl get pods -n argocd
