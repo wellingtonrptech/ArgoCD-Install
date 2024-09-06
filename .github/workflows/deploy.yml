@@ -10,47 +10,46 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Verificar o repositório
+      - name: Checkout repository
         uses: actions/checkout@v2
-      
-      - name: Instalar o kubectl
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Verify GCP Authentication
+        run: |
+          gcloud config list
+          gcloud projects describe "${{ secrets.GCP_PROJECT_ID }}"
+
+      - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
       
-      - name: Criar o diretório .kube
+      - name: Create .kube directory
         run: mkdir -p ~/.kube
       
-      - name: Configurar o kubeconfig
+      - name: Configure kubeconfig
         run: |
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
-          chmod 600 ~/.kube/config  # Corrigir permissões
+          gcloud container clusters get-credentials "${{ secrets.GKE_CLUSTER_NAME }}" --zone "${{ secrets.GKE_CLUSTER_ZONE }}" --project "${{ secrets.GCP_PROJECT_ID }}"
       
-      - name: Instalar o Helm
+      - name: Install Helm
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       
-      - name: Configurar o gcloud SDK
-        run: |
-          sudo apt-get update && sudo apt-get install -y curl
-          curl https://sdk.cloud.google.com | bash
-          exec -l $SHELL
-          gcloud components install gke-gcloud-auth-plugin
-          gcloud auth activate-service-account --key-file="${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
-          gcloud config set project ${GCP_PROJECT_ID}
-          gcloud config set compute/zone ${GKE_CLUSTER_ZONE}
-          gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_CLUSTER_ZONE} --project ${GCP_PROJECT_ID}
-      
-      - name: Adicionar o repositório Helm do Argo CD
+      - name: Add Argo CD Helm repository
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo update
       
-      - name: Instalar o Argo CD
+      - name: Install Argo CD
         run: |
           helm install argo-cd argo/argo-cd --namespace argocd --create-namespace
       
-      - name: Verificar a instalação do Argo CD
+      - name: Check Argo CD installation
         run: |
           kubectl get pods -n argocd
