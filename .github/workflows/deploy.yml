@@ -53,6 +53,13 @@ jobs:
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo update
+          
+      - name: Teste Login
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
       
       - name: Verificar login no GCP
         run: |
