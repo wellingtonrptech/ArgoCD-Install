@@ -53,6 +53,11 @@ jobs:
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo update
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           
       - name: Teste Login
         uses: google-github-actions/setup-gcloud@v2
