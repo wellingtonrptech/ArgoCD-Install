@@ -41,6 +41,7 @@ jobs:
           gcloud config set project ${GCP_PROJECT_ID}
           gcloud config set compute/zone ${GKE_CLUSTER_ZONE}
           gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_CLUSTER_ZONE} --project ${GCP_PROJECT_ID}
+          gcloud container clusters get-credentials homolog --zone us-central1-c --project develop-433821
       
       - name: Adicionar o repositório Helm do Argo CD
         run: |
