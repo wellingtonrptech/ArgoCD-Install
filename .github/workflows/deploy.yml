@@ -21,8 +21,8 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          gcloud container clusters get-credentials YOUR_CLUSTER_NAME --zone YOUR_ZONE --project YOUR_PROJECT_ID
-          kubectl config set-context --current --namespace=default  # ou o namespace desejado
+          gcloud container clusters get-credentials GKE_CLUSTER_NAME --zone GKE_CLUSTER_ZONE --project GCP_PROJECT_ID
+          kubectl config set-context --current --namespace=default
 
       - name: Install Helm
         run: |
