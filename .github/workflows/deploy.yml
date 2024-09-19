@@ -72,7 +72,7 @@ jobs:
         run: |
           gcloud auth list
           
-      -  name: Verifica Instalação do ArgoCD
+      -  name: Verifica Instalação do ArgoCd
          run: |
            kubectl get pods -n argocd
 
