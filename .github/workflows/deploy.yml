@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,12 +17,12 @@ jobs:
         uses: google-github-actions/setup-gcloud@v0.2.1
         with:
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: GCP_PROJECT_ID
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
           export_default_credentials: true
 
       - name: Configure kubectl
         run: |
-          gcloud container clusters get-credentials GKE_CLUSTER_NAME --zone GKE_CLUSTER_ZONE --project GCP_PROJECT_ID
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
           kubectl config set-context --current --namespace=default
 
       - name: Install Helm
