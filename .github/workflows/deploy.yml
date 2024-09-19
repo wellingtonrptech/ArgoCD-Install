@@ -1,78 +1,38 @@
-name: CI
+name: Install ArgoCD
 
 on:
   push:
     branches:
-      - main
-
+      - main 
 jobs:
-  setup-kubectl-and-argo:
+  deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Verificar o repositório
+      - name: Checkout repository
         uses: actions/checkout@v2
-      
-      - name: Instalar o kubectl
+
+      - name: Set up Google Cloud
+        uses: google-github-actions/setup-gcloud@v0.2.1
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: GCP_PROJECT_ID
+          export_default_credentials: true
+
+      - name: Configure kubectl
         run: |
-          curl -LO "https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          sudo mv ./kubectl /usr/local/bin/kubectl
-      
-      - name: Criar o diretório .kube
-        run: mkdir -p ~/.kube
-      
-      - name: Configurar o kubeconfig
+          gcloud container clusters get-credentials YOUR_CLUSTER_NAME --zone YOUR_ZONE --project YOUR_PROJECT_ID
+          kubectl config set-context --current --namespace=default  # ou o namespace desejado
+
+      - name: Install Helm
         run: |
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
-          chmod 600 ~/.kube/config  # Corrigir permissões
-      
-      - name: Instalar o Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      
-      - name: Configurar o gcloud SDK
-        run: |
-          sudo apt-get update && sudo apt-get install -y curl
-          curl https://sdk.cloud.google.com | bash
-          exec -l $SHELL
-          gcloud components install gke-gcloud-auth-plugin
-          gcloud auth activate-service-account --key-file="${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
-          gcloud config set project ${GCP_PROJECT_ID}
-          gcloud config set compute/zone ${GKE_CLUSTER_ZONE}
-          gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_CLUSTER_ZONE} --project ${GCP_PROJECT_ID}
-          gcloud container clusters get-credentials homolog --zone us-central1-c --project develop-433821
-      
-      - name: Adicionar o repositório Helm do Argo CD
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+      - name: Add ArgoCD Helm repository
         run: |
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo update
 
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-      - uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-          
-      -  name: Verifica Instalação do ArgoCD
-         run: |
-           kubectl get nodes
-           kubectl get pods -n argocd
-          
       - name: Install ArgoCD
         run: |
-          helm install argocd argo/argo-cd --namespace argocd
-      
-      - name: Verificar login no GCP
-        run: |
-          gcloud auth list
-          
-      -  name: Verifica Instalação do ArgoCd
-         run: |
-           kubectl get pods -n argocd
-
+          helm install argocd argo/argo-cd --namespace argocd --create-namespace
